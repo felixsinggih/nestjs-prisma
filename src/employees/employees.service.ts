@@ -4,6 +4,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { DatabaseService } from 'src/database/database.service';
 import { CreateEmployeeDto } from './dto/create-employees.dto';
 import { UpdateEmployeeDto } from './dto/update-employees.dto';
+import { hash } from "bcrypt"
 
 @Injectable()
 export class EmployeesService {
@@ -13,7 +14,7 @@ export class EmployeesService {
   //* Tetapi tidak ada validationnya 
   // async create(createEmployeeDto: Prisma.EmployeeCreateInput) {
   async create(createEmployeeDto: CreateEmployeeDto) {
-    const user = this.databaseService.employee.findUnique({
+    const user = await this.databaseService.employee.findUnique({
       where: {
         email: createEmployeeDto.email
       }
@@ -22,7 +23,12 @@ export class EmployeesService {
     if (user) throw new ConflictException('Email has taken!');
 
     return this.databaseService.employee.create({
-      data: createEmployeeDto,
+      data: {
+        name: createEmployeeDto.name,
+        email: createEmployeeDto.email,
+        role: createEmployeeDto.role,
+        password: await hash(createEmployeeDto.password, 12)
+      }
     });
   }
 
@@ -33,6 +39,11 @@ export class EmployeesService {
         where: {
           role,
         },
+        select: {
+          name: true,
+          email: true,
+          role: true
+        }
       });
 
     return this.databaseService.employee.findMany();
@@ -43,6 +54,11 @@ export class EmployeesService {
       where: {
         id,
       },
+      select: {
+        name: true,
+        email: true,
+        role: true
+      }
     });
 
     if (!user) throw new NotFoundException('User not found!');
@@ -66,7 +82,17 @@ export class EmployeesService {
       where: {
         id,
       },
-      data: updateEmployeeDto,
+      data: {
+        name: updateEmployeeDto.name,
+        email: updateEmployeeDto.email,
+        role: updateEmployeeDto.role,
+        password: await hash(updateEmployeeDto.password, 12)
+      },
+      select: {
+        name: true,
+        email: true,
+        role: true
+      }
     });
   }
 
