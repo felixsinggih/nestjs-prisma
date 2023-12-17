@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 //* Jika memakai schema type prisma 
 // import { Prisma } from '@prisma/client'; '@prisma/client/runtime/library';
 import { DatabaseService } from 'src/database/database.service';
@@ -13,6 +13,14 @@ export class EmployeesService {
   //* Tetapi tidak ada validationnya 
   // async create(createEmployeeDto: Prisma.EmployeeCreateInput) {
   async create(createEmployeeDto: CreateEmployeeDto) {
+    const user = this.databaseService.employee.findUnique({
+      where: {
+        email: createEmployeeDto.email
+      }
+    })
+
+    if (user) throw new ConflictException('Email has taken!');
+
     return this.databaseService.employee.create({
       data: createEmployeeDto,
     });
