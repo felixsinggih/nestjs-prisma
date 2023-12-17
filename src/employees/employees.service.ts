@@ -1,17 +1,24 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+//* Jika memakai schema type prisma 
+// import { Prisma } from '@prisma/client'; '@prisma/client/runtime/library';
 import { DatabaseService } from 'src/database/database.service';
+import { CreateEmployeeDto } from './dto/create-employees.dto';
+import { UpdateEmployeeDto } from './dto/update-employees.dto';
 
 @Injectable()
 export class EmployeesService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
-  async create(createEmployeeDto: Prisma.EmployeeCreateInput) {
+  //* Ini contoh jika menggunakan schema type prisma
+  //* Tetapi tidak ada validationnya 
+  // async create(createEmployeeDto: Prisma.EmployeeCreateInput) {
+  async create(createEmployeeDto: CreateEmployeeDto) {
     return this.databaseService.employee.create({
       data: createEmployeeDto,
     });
   }
 
+  //! Jika role tidak ada bagaimana
   async findAll(role?: 'INTERN' | 'ENGINEER' | 'ADMIN') {
     if (role)
       return this.databaseService.employee.findMany({
@@ -24,14 +31,29 @@ export class EmployeesService {
   }
 
   async findOne(id: number) {
-    return this.databaseService.employee.findUnique({
+    const user = await this.databaseService.employee.findUnique({
       where: {
         id,
       },
     });
+
+    if (!user) throw new NotFoundException('User not found!');
+
+    return user
   }
 
-  async update(id: number, updateEmployeeDto: Prisma.EmployeeUpdateInput) {
+  //* Ini contoh jika menggunakan schema type prisma
+  //* Tetapi tidak ada validationnya 
+  // async update(id: number, updateEmployeeDto: Prisma.EmployeeUpdateInput) {
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
+    const user = await this.databaseService.employee.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!user) throw new NotFoundException('User not found!');
+
     return this.databaseService.employee.update({
       where: {
         id,
@@ -41,6 +63,14 @@ export class EmployeesService {
   }
 
   async remove(id: number) {
+    const user = await this.databaseService.employee.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!user) throw new NotFoundException('User not found!');
+
     return this.databaseService.employee.delete({
       where: {
         id,
