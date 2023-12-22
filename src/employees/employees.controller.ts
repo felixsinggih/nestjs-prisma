@@ -46,11 +46,11 @@ export class EmployeesController {
     // @Body() updateEmployeeDto: Prisma.EmployeeUpdateInput,
     @Body(ValidationPipe) updateEmployeeDto: UpdateEmployeeDto,
   ) {
-    return this.employeesService.update(+id, updateEmployeeDto);
+    return this.employeesService.update(id, updateEmployeeDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.employeesService.remove(+id);
+    return this.employeesService.remove(id);
   }
 }
