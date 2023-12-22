@@ -40,13 +40,21 @@ export class EmployeesService {
           role,
         },
         select: {
+          id: true,
           name: true,
           email: true,
           role: true
         }
       });
 
-    return this.databaseService.employee.findMany();
+    return this.databaseService.employee.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true
+      }
+    });
   }
 
   async findOne(id: number) {
